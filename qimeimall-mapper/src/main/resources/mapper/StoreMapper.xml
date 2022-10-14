@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qimeixun.mapper.StoreMapper">
+
+    <resultMap id="getHotStoreListResultMap" type="com.qimeixun.vo.HotStoreVO">
+        <result column="storeId" jdbcType="VARCHAR" property="storeId" />
+        <result column="storeName" jdbcType="VARCHAR" property="storeName" />
+        <result column="storeLogo" jdbcType="VARCHAR" property="storeLogo" />
+        <result column="productCount" jdbcType="INTEGER" property="productCount" />
+        <collection property="productDTOS" ofType="com.qimeixun.po.ProductDTO">
+            <result column="id" property="id"/>
+            <result column="productName" property="productName"/>
+            <result column="productImg" property="productImg"/>
+            <result column="price" property="price"/>
+        </collection>
+    </resultMap>
+
+    <select id="getHotStoreList" resultMap="getHotStoreListResultMap">
+        SELECT
+            t1.id storeId,
+            t1.store_name as storeName,
+            t1.store_logo as storeLogo,
+            (
+                SELECT
+                    count(tt.id)
+                FROM
+                    tb_product tt
+                WHERE
+                    tt.store_id = t1.id
+            ) AS productCount,
+            t2.id,
+            t2.product_name as productName,
+            t2.product_img as productImg,
+            t2.price
+        FROM
+            tb_store t1
+        LEFT JOIN tb_product t2 ON t1.id = t2.store_id
+        WHERE
+            t1.is_hot = 1
+        AND t1. STATUS = 0
+        AND t1.is_delete = 0
+        AND t2. STATUS = 0
+        AND t2.is_delete = 0
+        AND t2.is_hot = 1
+    </select>
+
+</mapper>

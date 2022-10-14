@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qimeixun.mapper.UserAccountRecordMapper">
+
+    <select id="selectCustomerAcountRecord" parameterType="com.qimeixun.ro.CustomerAcountRecordRO" resultType="com.qimeixun.vo.CustomerAcountRecordVO">
+		SELECT
+			t1.*,
+			t2.nick_name,
+			t3.user_name AS sysUserName
+		FROM
+			tb_user_acount_record t1
+		LEFT JOIN tb_user t2 ON t1.user_id = t2.id
+		LEFT JOIN sys_user t3 ON t1.sys_user_id = t3.id
+		where 1 = 1 and  t1.`type` = #{params.type}
+		<if test="params.nickName != null and params.nickName != ''">
+			and t2.nick_name like CONCAT('%',#{params.nickName},'%')
+		</if>
+		<if test="params.phone != null and params.phone != ''">
+			and t2.phone like CONCAT('%',#{params.phone},'%')
+		</if>
+		order by create_time desc
+	</select>
+
+</mapper>

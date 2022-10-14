@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 系统资源  wangdaqiang 2019-08-23 -->
+<mapper namespace="com.qimeixun.mapper.SysResourceMapper">
+
+    
+    <!-- 新增 -->
+    <insert id="insert" parameterType="com.qimeixun.entity.SysResource">
+        INSERT INTO sys_resource (
+            id,
+            resource_type,
+            parent_id,
+            name_cn,
+            name_en,
+            url,
+            permission,
+            sort_no,
+            icon
+        ) VALUES (
+            #{id},
+            #{resourceType},
+            #{parentId},
+            #{nameCn},
+            #{nameEn},
+            #{url},
+            #{permission},
+            #{sortNo},
+            #{icon}
+        )
+    </insert>
+
+    <!-- 更新 -->
+    <update id="update" parameterType="com.qimeixun.entity.SysResource">
+        update sys_resource
+        set
+        <if test="terminalType != null">
+            terminal_type = #{terminalType},
+        </if>
+        <if test="resourceType != null">
+            resource_type = #{resourceType},
+        </if>
+        <if test="parentId != null and parentId != ''">
+            parent_id = #{parentId},
+        </if>
+        <if test="nameCn != null and nameCn != ''">
+            name_cn = #{nameCn},
+        </if>
+        <if test="nameEn != null and nameEn != ''">
+            name_en = #{nameEn},
+        </if>
+        <if test="url != null and url != ''">
+            url = #{url},
+        </if>
+        <if test="permission != null and permission != ''">
+            permission = #{permission},
+        </if>
+        <if test="sortNo != null">
+            sort_no = #{sortNo},
+        </if>
+        <if test="icon != null and icon != ''">
+            icon = #{icon},
+        </if>
+        updated_at = NOW()
+        where id = #{id}
+    </update>
+
+
+    <!-- 删除 -->
+    <delete id="delete" parameterType="java.lang.String">
+        delete from sys_resource where id = #{id}
+    </delete>
+
+
+    <!-- 根据id查询 -->
+    <select id="selectById" parameterType="java.lang.String" resultType="com.qimeixun.entity.SysResource">
+        SELECT
+            terminal_type as terminalType,
+            resource_type as resourceType,
+            parent_id as parentId,
+            name_cn as nameCn,
+            name_en as nameEn,
+            url,
+            permission,
+            sort_no as sortNo,
+            icon,
+            created_at as createdAt,
+            updated_at as updatedAt
+        FROM sys_resource
+        where is_delete = 0 and id = #{id}
+    </select>
+    
+    <!-- 查询当前用户某路由下的所有有权限的按钮 -->
+    <select id="selectPermissionButtonList" parameterType="java.util.Map" resultType="com.qimeixun.entity.SysResource">
+    	SELECT
+			id,
+            terminal_type as terminalType,
+            resource_type as resourceType,
+            parent_id as parentId,
+            name_cn as nameCn,
+            name_en as nameEn,
+            url,
+            permission,
+            sort_no as sortNo,
+            icon,
+            created_at as createdAt,
+            updated_at as updatedAt
+		FROM
+			sys_resource t1
+		WHERE
+			t1.resource_type = 1
+		AND t1.parent_id = (
+			SELECT
+				t2.id
+			FROM
+				sys_resource t2
+			WHERE
+				t2.url = #{resourceStr}
+		)
+		AND t1.id IN (
+			SELECT
+				t1.resource_id
+			FROM
+				sys_role_resource t1
+			WHERE
+				t1.role_id = (
+					SELECT
+						t3.role_id
+					FROM
+						sys_user_role t3
+					WHERE
+						t3.user_id = #{userId}
+				)
+		)
+    </select>
+
+    <!-- 查询资源列表(支持分页) -->
+    <select id="selectByParams" parameterType="java.util.Map" resultType="com.qimeixun.entity.SysResource">
+        SELECT
+            id,
+            terminal_type as terminalType,
+            resource_type as resourceType,
+            parent_id as parentId,
+            name_cn as nameCn,
+            name_en as nameEn,
+            url,
+            permission,
+            sort_no as sortNo,
+            icon,
+            created_at as createdAt,
+            updated_at as updatedAt
+        FROM sys_resource
+        where is_delete = 0
+        <if test="terminalType != null">
+            and terminal_type = #{terminalType}
+        </if>
+        <if test="resourceType != null">
+            and resource_type = #{resourceType}
+        </if>
+        <if test="parentId != null and parentId != ''">
+            and parent_id = #{parentId}
+        </if>
+        <if test="nameCn != null and nameCn != ''">
+            and name_cn = #{nameCn}
+        </if>
+        <if test="nameEn != null and nameEn != ''">
+            and name_en = #{nameEn}
+        </if>
+        <if test="id != null and id != ''">
+            and id = #{id}
+        </if>
+        <if test="url != null and url != ''">
+            and url = #{url}
+        </if>
+        order by sort_no asc
+        <if test="page != null">
+            limit #{page.limitFrom}, #{page.pageSize}
+        </if>
+    </select>
+    
+    <!-- 查询资源列表总条数(支持分页) -->
+    <select id="selectByParamsCount" parameterType="java.util.Map" resultType="java.lang.Integer">
+        SELECT count(id)
+        FROM sys_resource
+        where is_delete = 0
+        <if test="terminalType != null">
+            and terminal_type = #{terminalType}
+        </if>
+        <if test="resourceType != null">
+            and resource_type = #{resourceType}
+        </if>
+        <if test="parentId != null and parentId != ''">
+            and parent_id = #{parentId}
+        </if>
+        <if test="nameCn != null and nameCn != ''">
+            and name_cn = #{nameCn}
+        </if>
+        <if test="nameEn != null and nameEn != ''">
+            and name_en = #{nameEn}
+        </if>
+    </select>
+
+
+    <!-- 验证用户是否有指定的资源权限 -->
+    <select id="selectByPermissionCount" parameterType="java.util.Map" resultType="java.lang.Integer">
+        select count(1)
+        from sys_user_role ur
+        left join sys_role_resource rr on rr.role_id = ur.role_id
+        left join sys_resource r on r.id = rr.resource_id
+        where r.is_delete = 0 and ur.user_id = #{userId} and r.permission = #{permission}
+    </select>
+
+
+
+    <!-- 查询角色的资源信息 -->
+    <select id="selectByRoleId" parameterType="java.lang.String" resultType="com.qimeixun.entity.SysResource">
+        SELECT
+            r.id,
+            r.terminal_type as terminalType,
+            r.resource_type as resourceType,
+            r.parent_id as parentId,
+            r.name_cn as nameCn,
+            r.name_en as nameEn,
+            r.url,
+            r.permission,
+            r.sort_no as sortNo,
+            r.icon,
+            r.created_at as createdAt,
+            r.updated_at as updatedAt
+        FROM sys_resource r
+        right join sys_role_resource rr on rr.resource_id = r.id
+		where r.is_delete = 0 and rr.role_id = #{roleId}
+    </select>
+
+
+    <!-- 查询用户拥有权限的菜单数据 -->
+    <select id="menuInit" parameterType="java.util.Map" resultType="com.qimeixun.vo.MenuVO">
+        SELECT
+            r.id,
+            r.resource_type as resourceType,
+            r.terminal_type,
+            r.parent_id as parentId,
+            r.name_cn as nameCn,
+            r.name_en as nameEn,
+            r.url,
+            r.permission,
+            r.sort_no as sortNo,
+            r.icon
+        FROM sys_resource r
+        right join sys_role_resource rr on rr.resource_id = r.id
+        right join sys_user_role ur on ur.role_id = rr.role_id
+        where r.is_delete = 0
+            and r.resource_type = 0
+            and ur.user_id = #{userId}
+        order by r.sort_no asc
+    </select>
+
+
+    <!-- 查询所有菜单数据 -->
+    <select id="selectMenuAll" parameterType="java.util.Map" resultType="com.qimeixun.vo.MenuVO">
+        SELECT
+            id,
+            terminal_type,
+            resource_type as resourceType,
+            parent_id as parentId,
+            name_cn as nameCn,
+            name_en as nameEn,
+            url,
+            permission,
+            sort_no as sortNo,
+            icon
+        FROM sys_resource
+        where is_delete = 0
+            and resource_type = 0
+            and terminal_type = #{terminalType}
+        order by sort_no asc
+    </select>
+
+
+    <!-- 根据id查询菜单 -->
+    <select id="selectMenuById" parameterType="java.lang.String" resultType="com.qimeixun.vo.MenuVO">
+        SELECT
+            id,
+            terminal_type,
+            resource_type,
+            parent_id,
+            name_cn,
+            name_en,
+            url,
+            permission,
+            sort_no,
+            icon
+        FROM sys_resource
+        where is_delete = 0 and id = #{id}
+    </select>
+
+
+    <!-- 查询所有菜单数据 -->
+    <select id="selectMenuByParams" parameterType="java.util.Map" resultType="com.qimeixun.vo.MenuVO">
+        select
+            sr.id,
+            sr.terminal_type as terminalType,
+            sr.resource_type as resourceType,
+            sr.parent_id as parentId,
+            sr.name_cn as nameCn,
+            sr.name_en as nameEn,
+            sr.url,
+            sr.permission,
+            sr.sort_no as sortNo,
+            sr.icon
+            <if test="roleId != null and roleId != ''">
+                , if(srr.role_id is null, 0, 1) isPermission
+            </if>
+        from sys_resource sr
+        <if test="roleId != null and roleId != ''">
+            left join sys_role_resource srr on srr.resource_id = sr.id and srr.role_id = #{roleId}
+        </if>
+        where sr.is_delete = 0
+        <if test="terminalType != null">
+            and sr.terminal_type = #{terminalType}
+        </if>
+        <if test="resourceType != null">
+            and sr.resource_type = #{resourceType}
+        </if>
+        <if test="nameCn != null and nameCn != ''">
+            and sr.name_cn like CONCAT('%', CONCAT(#{nameCn}, '%'))
+        </if>
+        <if test="nameEn != null and nameEn != ''">
+            and sr.name_en like CONCAT('%', CONCAT(#{nameEn}, '%'))
+        </if>
+        <if test="permission != null and permission != ''">
+            and sr.permission like CONCAT('%', CONCAT(#{permission}, '%'))
+        </if>
+        order by sr.sort_no asc
+    </select>
+
+
+    <!-- 查询用户拥有权限的资源的权限字符串集合 -->
+    <select id="selectPermissionByUserId" parameterType="java.util.Map" resultType="java.lang.String">
+        SELECT r.permission
+        FROM sys_resource r
+        right join sys_role_resource rr on rr.resource_id = r.id
+        right join sys_user_role ur on ur.role_id = rr.role_id
+        where r.permission is not null and r.permission != ''
+            and ur.user_id = #{userId}
+    </select>
+
+    <!-- 查询用户拥有权限的资源的权限字符串集合 -->
+    <select id="selectPermissionUrlByUserId" parameterType="java.util.Map" resultType="java.lang.String">
+        SELECT r.url
+        FROM sys_resource r
+        right join sys_role_resource rr on rr.resource_id = r.id
+        right join sys_user_role ur on ur.role_id = rr.role_id
+        where r.permission is not null and r.permission != ''
+            and ur.user_id = #{userId}
+    </select>
+
+
+    <!-- 查询用户指定菜单下的按钮权限列表 -->
+    <select id="selectMenuBtnList" parameterType="java.util.Map" resultType="com.qimeixun.entity.SysResource">
+        select
+            r.id,
+            r.terminal_type as terminalType,
+            r.resource_type as resourceType,
+            r.parent_id as parentId,
+            r.name_cn as nameCn,
+            r.name_en as nameEn,
+            r.url,
+            r.permission,
+            r.sort_no as sortNo,
+            r.icon,
+            r.created_at as createdAt,
+            r.updated_at as updatedAt
+        from sys_resource r
+        <if test="userId != null and userId != ''">
+            right join sys_role_resource rr on rr.resource_id = r.id
+            right join sys_user_role ur on ur.role_id = rr.role_id
+        </if>
+        where r.is_delete = 0 and r.permission is not null and r.permission != ''
+        <if test="resourceType != null">
+            and r.resource_type = #{resourceType}
+        </if>
+        <if test="userId != null and userId != ''">
+            and ur.user_id = #{userId}
+        </if>
+        <if test="id != null and id != ''">
+            and r.id = #{id}
+        </if>
+        <if test="url != null and url != ''">
+            and r.url = #{url}
+        </if>
+    </select>
+
+</mapper>

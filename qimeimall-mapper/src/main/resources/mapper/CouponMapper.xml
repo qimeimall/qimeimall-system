@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qimeixun.mapper.CouponMapper">
+    <select id="selectCouponList" parameterType="com.qimeixun.ro.CouponPageRO" resultType="com.qimeixun.vo.CouponListVO">
+        SELECT
+            t1.*,
+            ifnull(t2.store_name, '自营') storeName
+        FROM
+            tb_coupon t1
+        LEFT JOIN tb_store t2 ON t2.id = t1.store_id
+        WHERE 1 = 1
+        <if test="params.couponName != null and params.couponName != ''">
+            and t1.coupon_name like CONCAT('%',#{params.couponName},'%')
+        </if>
+        <if test="params.storeId != null">
+            and t1.store_id = #{params.storeId}
+        </if>
+        order by t1.sort
+    </select>
+
+    <select id="selectUserNotHaveCouponList" parameterType="map" resultType="com.qimeixun.vo.CouponListVO">
+        SELECT
+            t1.*,
+            ifnull(t3.store_name, '自营') storeName
+        FROM
+            tb_coupon t1
+        LEFT JOIN tb_store t3 ON t3.id = t1.store_id
+        where t1.status = 0
+        <if test="userId != null and userId != ''">
+            and t1.id not in (select coupon_id from tb_coupon_user where user_id = #{userId} )
+        </if>
+        and (t1.effect_time > now() or t1.effect_time is null)
+        and (t1.total_count > t1.surplus_count or t1.total_count = 0)
+        <if test="storeId != null and userId != ''">
+            and t1.store_id = #{storeId}
+        </if>
+        order by t1.sort
+    </select>
+</mapper>

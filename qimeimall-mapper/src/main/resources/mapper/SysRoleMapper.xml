@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 系统角色  wangdaqiang 2019-08-24 -->
+<mapper namespace="com.qimeixun.mapper.SysRoleMapper">
+
+
+    <!-- 新增 -->
+    <insert id="insert" parameterType="com.qimeixun.entity.SysRole">
+        insert into sys_role (
+            id,
+            role_name,
+            description
+        ) values (
+            #{id},
+            #{roleName},
+            #{description}
+        )
+    </insert>
+
+
+    <!-- 更新 -->
+    <update id="update" parameterType="com.qimeixun.entity.SysRole">
+    	UPDATE sys_role
+		 <trim prefix="set" suffixOverrides=",">
+	        <if test="roleName != null and roleName != ''">
+	            role_name = #{roleName},
+	        </if>
+	        <if test="description != null and description != ''">
+	            description = #{description},
+	        </if>
+		 </trim>
+		WHERE id = #{id}
+    </update>
+
+
+    <!-- 删除 -->
+    <update id="delete" parameterType="java.lang.String">
+        delete from sys_role where id = #{id}
+    </update>
+
+
+    <!-- 根据id查询 -->
+    <select id="selectById" parameterType="java.lang.String" resultType="com.qimeixun.entity.SysRole">
+        select
+            id,
+            role_name as roleName,
+            description,
+            created_at as createdAt,
+            updated_at as updatedAt
+        from sys_role
+        where id = #{id}
+    </select>
+
+
+    <!-- 查询列表(支持分页) -->
+    <select id="selectByParams" parameterType="java.util.Map" resultType="com.qimeixun.entity.SysRole">
+        select
+            id,
+            role_name as roleName,
+            description,
+            created_at as createdAt,
+            updated_at as updatedAt
+        from sys_role
+        <where>
+            <if test="roleName != null and roleName != ''">
+                role_name = CONCAT('%', CONCAT(#{roleName}, '%'))
+            </if>
+            <if test="description != null and description != ''">
+                and description = CONCAT('%', CONCAT(#{description}, '%'))
+            </if>
+        </where>
+        order by updated_at desc
+        <if test="page != null">
+            limit #{page.limitFrom}, #{page.pageSize}
+        </if>
+    </select>
+
+
+    <!-- 查询总条数 -->
+    <select id="selectByParamsCount" parameterType="java.util.Map" resultType="java.lang.Integer">
+        select count(id)
+        from sys_role
+        <where>
+            <if test="roleName != null and roleName != ''">
+                role_name = CONCAT('%', CONCAT(#{roleName}, '%'))
+            </if>
+            <if test="description != null and description != ''">
+                and description = CONCAT('%', CONCAT(#{description}, '%'))
+            </if>
+        </where>
+    </select>
+
+
+    <!-- 查询用户的角色信息 -->
+    <select id="selectByUserId" parameterType="java.lang.String" resultType="com.qimeixun.vo.SysRoleVO">
+        select
+            r.id,
+            r.role_name as roleName,
+            r.description
+        from sys_role r
+        inner join sys_user_role ur on ur.role_id = r.id
+        where ur.user_id = #{user_id}
+    </select>
+
+
+    <!-- 删除角色所有的权限资源 -->
+    <update id="deleteRoleResource" parameterType="java.lang.String">
+        delete from sys_role_resource where role_id = #{roleId}
+    </update>
+
+
+    <!-- 添加角色权限资源 -->
+    <insert id="addRoleResource" parameterType="com.qimeixun.ro.SysRoleResourceRO">
+        insert into sys_role_resource (role_id, resource_id)
+        values
+        <foreach collection="resourceIds" item="resourceId" separator=",">
+            (#{roleId}, #{resourceId})
+        </foreach>
+    </insert>
+
+</mapper>

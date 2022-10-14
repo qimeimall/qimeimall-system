@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 系统操作日志  wangdaqiang 2019-08-22 -->
+<mapper namespace="com.qimeixun.mapper.SysOperateLogMapper">
+
+
+    <!-- 插入操作日志 -->
+    <insert id="insertLog" parameterType="com.qimeixun.ro.SysLoginLog">
+        insert into sys_login_log (id, login_time, login_ip,
+      browser, `system`, description,
+      login_name, user_id, is_mobile)
+    values (#{id,jdbcType=VARCHAR}, #{loginTime,jdbcType=TIMESTAMP}, #{loginIp,jdbcType=VARCHAR},
+      #{browser,jdbcType=VARCHAR}, #{system,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR},
+      #{loginName,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR}, #{isMobile,jdbcType=VARCHAR})
+    </insert>
+
+
+    <!-- 查询操作日志 -->
+    <select id="selectLogList" parameterType="com.qimeixun.ro.SysOperateLogRO" resultType="com.qimeixun.vo.SysOperateLogVO">
+        select
+            l.id,
+            l.operate_type,
+            l.module_id,
+            l.target_id,
+            l.description,
+            l.user_id,
+            l.user_ip,
+            l.created_at,
+            u.login_name,
+            u.user_name
+        from sys_operate_log l
+        left join sys_user u on u.id = l.user_id
+        <where>
+            <if test="operateType != null">
+                l.operate_type = #{operateType}
+            </if>
+            <if test="moduleId != null and moduleId != ''">
+                and l.module_id = #{moduleId}
+            </if>
+            <if test="userName != null and userName != ''">
+                and u.user_name = #{userName}
+            </if>
+            <if test="userIp != null and userIp != ''">
+                and l.user_ip = #{userIp}
+            </if>
+            <if test="startDate != null">
+                <![CDATA[ and to_days(l.created_at) >= to_days(#{startDate}) ]]>
+            </if>
+            <if test="entDate != null">
+                <![CDATA[ and to_days(l.created_at) <= to_days(#{entDate}) ]]>
+            </if>
+        </where>
+        order by l.created_at desc
+        limit #{limitFrom}, #{pageSize}
+    </select>
+
+
+    <!-- 查询操作日志条数 -->
+    <select id="selectLogListCount" parameterType="com.qimeixun.ro.SysOperateLogRO" resultType="int">
+        select count(l.id)
+        from sys_operate_log l
+        left join sys_user u on u.id = l.user_id
+        <where>
+            <if test="operateType != null">
+                l.operate_type = #{operateType}
+            </if>
+            <if test="moduleId != null and moduleId != ''">
+                and l.module_id = #{moduleId}
+            </if>
+            <if test="userName != null and userName != ''">
+                and u.user_name = #{userName}
+            </if>
+            <if test="userIp != null and userIp != ''">
+                and l.user_ip = #{userIp}
+            </if>
+            <if test="startDate != null">
+                <![CDATA[ and to_days(l.created_at) >= to_days(#{startDate}) ]]>
+            </if>
+            <if test="entDate != null">
+                <![CDATA[ and to_days(l.created_at) <= to_days(#{entDate}) ]]>
+            </if>
+        </where>
+    </select>
+
+</mapper>

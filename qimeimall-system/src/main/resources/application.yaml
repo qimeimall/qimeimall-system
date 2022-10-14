@@ -1,0 +1,22 @@
+server:
+  port: 30000
+
+
+admin:
+  token:
+    timeout: 300
+  password:
+    md5:
+      key: 893d4a24ff3a4fbd9c644b3fff8fa0a0
+
+user:
+  token:
+    timeout: 300
+
+
+#pagehelper分页插件
+pagehelper:
+  helperDialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  params: count=countSql

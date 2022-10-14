@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qimeixun.mapper.CustomerMapper">
+    <select id="selectMyInfo" parameterType="java.lang.String" resultType="map">
+        select
+         t1.id,
+        t1.nick_name nickName,
+        t1.head_img as headImg,
+        t1.points,
+        t1.balance,
+        (select count(id) from tb_order where user_id = t1.id and `status` = 0 and `refund_status` = 0) as unPayOrderCount,
+        (select count(id) from tb_order where user_id = t1.id and `status` = 1 and `refund_status` = 0) as unSendOrderCount,
+        (select count(id) from tb_order where user_id = t1.id and `status` = 2 and `refund_status` = 0) as sendOrderCount,
+        (select count(id) from tb_order where user_id = t1.id and `status` = 4 and `refund_status` = 0) as unAssessOrderCount,
+        (select count(id) from tb_order where user_id = t1.id and `refund_status` = 1) as afterSalesOrderCount,
+        (select count(id) from tb_coupon_user where user_id = t1.id and is_used = 0 and effect_time > now()) as userCouponCount
+        from
+        tb_user t1 where t1.id = #{userId}
+    </select>
+
+    <select id="selectUserConsumptionMoney"  resultType="java.math.BigDecimal">
+        SELECT
+            (
+                SELECT
+                    ifnull(sum(money), 0)
+                FROM
+                    tb_user_bill
+                WHERE
+                    user_id = #{userId}
+                AND type = 0
+            ) - (
+                SELECT
+                    ifnull(sum(money), 0)
+                FROM
+                    tb_user_bill
+                WHERE
+                    user_id = #{userId}
+                AND type = 1
+            )
+    </select>
+
+    <select id="selectMyBrokerageList"  resultType="com.qimeixun.vo.BrokerageVO">
+        SELECT
+            t1.*, t2.nick_name as buyUserName
+        FROM
+            tb_user_brokerage t1
+        LEFT JOIN tb_user t2 ON t1.buy_user_id = t2.id
+        WHERE
+            t1.`status` = 1 and user_id = #{params.userId}
+        order by t1.create_time desc
+    </select>
+
+</mapper>

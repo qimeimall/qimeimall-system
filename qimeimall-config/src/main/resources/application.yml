@@ -1,0 +1,25 @@
+#使用的环境名称
+spring:
+  profiles:
+    active: dev
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: "GMT+8"
+  security:
+    basic:
+      enabled: false
+#    user:
+#      password: admin
+#      name: admin
+
+logging:
+  level:
+    root: info
+    com.qimeixun: debug
+    org.springframework.security: warn
+
+audience:
+  aud: admin-key
+  base64Secret: AASDFGHJKLMNBVCXZPOIUYTREWQ!@#$%^&uj^yhn%tgb$rfv78
+  iss: super
+  expiresSecond: 43200000

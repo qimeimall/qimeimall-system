@@ -1,0 +1,495 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qimeixun.mapper.OrderMapper">
+
+    <resultMap id="selectOrderInfoCreateBefore" type="com.qimeixun.po.CartOrderDTO">
+        <result column="storeId" jdbcType="VARCHAR" property="storeId" />
+        <result column="storeName" jdbcType="VARCHAR" property="storeName" />
+        <collection property="shopCartListVOS" ofType="com.qimeixun.vo.ShopCartListVO">
+            <result column="id" property="id"/>
+            <result column="productName" property="productName"/>
+            <result column="productImg" property="productImg"/>
+            <result column="num" property="num"/>
+            <result column="price" property="price"/>
+            <result column="attrValue" property="attrValue"/>
+            <result column="categoryId" property="categoryId"/>
+            <result column="productId" property="productId"/>
+            <result column="productAttrId" property="productAttrId"/>
+        </collection>
+    </resultMap>
+
+    <resultMap id="selectUserOrderList" type="com.qimeixun.vo.UserOrderVO">
+        <result column="storeId" jdbcType="VARCHAR" property="storeId" />
+        <result column="storeName" jdbcType="VARCHAR" property="storeName" />
+        <result column="orderId" jdbcType="VARCHAR" property="orderId" />
+        <result column="payId" jdbcType="VARCHAR" property="payId"/>
+        <result column="totalMoney" jdbcType="DOUBLE" property="totalMoney" />
+        <result column="totalPost" jdbcType="DOUBLE" property="totalPost" />
+        <result column="storeCouponMoney" jdbcType="DOUBLE" property="storeCouponMoney" />
+        <result column="platformCouponMoney" jdbcType="DOUBLE" property="platformCouponMoney" />
+        <result column="payMoney" jdbcType="DOUBLE" property="payMoney" />
+        <result column="createTime" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="platformCouponId" jdbcType="VARCHAR" property="platformCouponId" />
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="nickName" jdbcType="VARCHAR" property="nickName"/>
+        <result column="remark" jdbcType="VARCHAR" property="remark"/>
+        <result column="buyType" jdbcType="VARCHAR" property="buyType"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="phone" jdbcType="VARCHAR" property="phone"/>
+        <result column="address" jdbcType="VARCHAR" property="address"/>
+        <result column="is_points" jdbcType="VARCHAR" property="isPoints"/>
+        <result column="pay_type" jdbcType="VARCHAR" property="payType"/>
+        <result column="refundStatus" jdbcType="VARCHAR" property="refundStatus"/>
+        <result column="order_type" jdbcType="VARCHAR" property="orderType"/>
+        <collection property="userProductVOS" ofType="com.qimeixun.vo.UserProductVO">
+            <result column="productInfoJson" property="productInfoJson"/>
+            <result column="productImg" property="productImg"/>
+            <result column="num" property="num"/>
+            <result column="attrValue" property="attrValue"/>
+            <result column="cartId" property="cartId"/>
+            <result column="price" property="price"/>
+            <result column="isReply" property="isReply"/>
+        </collection>
+    </resultMap>
+
+    <resultMap id="selectUserRefundOrderMap" type="com.qimeixun.vo.UserRefundOrderVO">
+        <result column="storeId" jdbcType="VARCHAR" property="storeId" />
+        <result column="storeName" jdbcType="VARCHAR" property="storeName" />
+        <result column="orderId" jdbcType="VARCHAR" property="orderId" />
+        <result column="payId" jdbcType="VARCHAR" property="payId"/>
+        <result column="totalMoney" jdbcType="DOUBLE" property="totalMoney" />
+        <result column="totalPost" jdbcType="DOUBLE" property="totalPost" />
+        <result column="storeCouponMoney" jdbcType="DOUBLE" property="storeCouponMoney" />
+        <result column="platformCouponMoney" jdbcType="DOUBLE" property="platformCouponMoney" />
+        <result column="payMoney" jdbcType="DOUBLE" property="payMoney" />
+        <result column="createTime" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="platformCouponId" jdbcType="VARCHAR" property="platformCouponId" />
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="nickName" jdbcType="VARCHAR" property="nickName"/>
+        <result column="remark" jdbcType="VARCHAR" property="remark"/>
+        <result column="buyType" jdbcType="VARCHAR" property="buyType"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="phone" jdbcType="VARCHAR" property="phone"/>
+        <result column="address" jdbcType="VARCHAR" property="address"/>
+        <result column="is_points" jdbcType="VARCHAR" property="isPoints"/>
+        <result column="pay_type" jdbcType="VARCHAR" property="payType"/>
+        <result column="pay_time" jdbcType="TIMESTAMP" property="payTime"/>
+        <result column="refundStatus" jdbcType="VARCHAR" property="refundStatus"/>
+        <result column="refundOrderId" jdbcType="VARCHAR" property="refundOrderId"/>
+        <result column="order_type" jdbcType="VARCHAR" property="orderType"/>
+
+        <result column="refundRemark" jdbcType="VARCHAR" property="refundRemark"/>
+        <result column="refundMoney" jdbcType="DOUBLE" property="refundMoney"/>
+        <result column="refundType" jdbcType="VARCHAR" property="refundType"/>
+        <result column="systemRemark" jdbcType="VARCHAR" property="systemRemark"/>
+        <result column="userRefundStatus" jdbcType="VARCHAR" property="userRefundStatus"/>
+        <result column="refundCreateTime" jdbcType="TIMESTAMP" property="refundCreateTime"/>
+
+
+        <collection  property="userProductVOS" ofType="com.qimeixun.vo.UserRefundProductVO" select="selectUserRefundOrderProduct" column="refundOrderId"/>
+
+    </resultMap>
+
+    <select id="selectOrderInfoCreateBefore" parameterType="list" resultMap="selectOrderInfoCreateBefore">
+        select * from (
+                SELECT
+                    t1.id,
+                    t2.product_name as productName,
+                    t2.product_img as productImg,
+                    t1.num,
+                    t3.price,
+                    if(t3.attr_value is null, 3, 0)  as type,
+                    t1.create_time,
+                    t3.attr_value as attrValue,
+                    t2.store_id as storeId,
+                    if(t2.store_id != 0,t4.store_name, '自营') as storeName,
+                    t2.category_id  as categoryId,
+                    t1.product_id as productId,
+                    t1.product_attr_id as productAttrId
+                FROM
+                    tb_shop_cart t1
+                LEFT JOIN
+                    tb_product t2 on t1.product_id = t2.id
+                left join
+                    tb_product_attr_detail t3 on t1.product_attr_id = t3.id
+				left join
+				tb_store t4 on t2.store_id = t4.id
+                WHERE
+                    t1.product_attr_id != 0 and t1.id in
+                     <foreach item="item" collection="list" separator="," open="(" close=")" index="">
+                       #{item}
+                     </foreach>
+
+                ) tt order by type, create_time desc
+    </select>
+
+    <insert id="insertOrderCartRelation" parameterType="list">
+        insert into tb_order_cart (order_id, cart_id) values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.orderId},
+            #{item.cartId}
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectUserOrderList" resultMap="selectUserOrderList">
+        SELECT
+            t1.order_id as orderId,
+            t1.pay_id as payId,
+            t1.total_money as totalMoney,
+            t1.total_post as totalPost,
+            t1.store_coupon_money as storeCoponMoney,
+            t1.platform_coupon_money as platformCouponMoney,
+            t1.pay_money as payMoney,
+            t1.store_id as storeId,
+            if(t1.store_id = 0,'自营', t2.store_name) as storeName,
+            t4.product_info as productInfoJson,
+            t4.num,
+            t4.attr_value as attrValue,
+            t7.platform_coupon_id as platformCouponId,
+            t4.id as cartId,
+            t4.price,
+            t4.is_reply as isReply,
+            t1.create_time as createTime,
+            t1.status,
+            t1.phone,
+            t1.name,
+            t1.address,
+            t1.remark,
+            t1.buy_type as buyType,
+            t1.is_points
+        FROM
+            tb_order t1
+        LEFT JOIN
+        tb_store t2 ON t1.store_id = t2.id
+        left join
+        tb_order_cart t3 on t1.order_id = t3.order_id
+        left join
+        tb_shop_cart t4 on t3.cart_id = t4.id
+        left join
+        tb_order_pay t7 on t1.order_id = t7.order_id
+        where 1 = 1
+        <if test="params.type != null and params.type != ''">
+            and t1.status = #{params.type}
+        </if>
+        <if test="params.userId != null and params.userId != ''">
+            and t1.user_id = #{params.userId}
+        </if>
+        <if test="params.orderId != null and params.orderId != ''">
+            and t1.order_id = #{params.orderId}
+        </if>
+        and t1.status not in (6 , 7)
+        and t1.refund_status not in (1, 3)
+        order by t1.create_time desc
+    </select>
+
+    <select id="selectOrderList" parameterType="com.qimeixun.ro.OrderListRO" resultMap="selectUserOrderList">
+        SELECT
+        t1.order_id as orderId,
+        t1.total_money as totalMoney,
+        t1.total_post as totalPost,
+        t1.store_coupon_money as storeCoponMoney,
+        t1.platform_coupon_money as platformCouponMoney,
+        t1.pay_money as payMoney,
+        t1.store_id as storeId,
+        if(t1.store_id = 0,'自营', t2.store_name) as storeName,
+        t4.product_info as productInfoJson,
+        t4.num,
+        t4.attr_value as attrValue,
+        t7.platform_coupon_id as platformCouponId,
+        t4.id as cartId,
+        t4.price,
+        t1.create_time as createTime,
+        t1.status,
+        t6.nick_name as nickName,
+        t1.remark,
+        t1.buy_type as buyType,
+        t1.pay_type,
+        t1.order_type
+        FROM
+        tb_order t1
+        LEFT JOIN
+        tb_store t2 ON t1.store_id = t2.id
+        left join
+        tb_order_cart t3 on t1.order_id = t3.order_id
+        left join
+        tb_shop_cart t4 on t3.cart_id = t4.id
+        left join
+        tb_order_pay t7 on t1.order_id = t7.order_id
+        left join
+        tb_user t6 on t1.user_id = t6.id
+        where 1 = 1
+        <if test="params.type != null and params.type != ''">
+            and t1.status = #{params.type}
+        </if>
+        <if test="params.orderId != null and params.orderId != ''">
+            and t1.order_id = #{params.orderId}
+        </if>
+        <if test="params.nickName != null and params.nickName != ''">
+            and t6.nick_name = #{params.nickName}
+        </if>
+        <if test="params.name != null and params.name != ''">
+            and t1.name = #{params.name}
+        </if>
+        <if test="params.phone != null and params.phone != ''">
+            and t1.phone = #{params.phone}
+        </if>
+        <if test="params.startTime != null and params.startTime != ''">
+            and t1.create_time >= #{params.startTime}
+        </if>
+        <if test="params.endTime != null and params.endTime != ''">
+            and t1.create_time <![CDATA[ < ]]>#{params.endTime}
+        </if>
+        order by t1.create_time desc
+    </select>
+
+    <select id="selectUserRefundOrderList" resultMap="selectUserOrderList">
+        select
+        t3.id as orderId,
+        t1.pay_id as payId,
+        t1.total_money as totalMoney,
+        t1.total_post as totalPost,
+        t1.store_coupon_money as storeCoponMoney,
+        t1.platform_coupon_money as platformCouponMoney,
+        t3.refund_money as payMoney,
+        t1.store_id as storeId,
+        if(t1.store_id = 0,'自营', t2.store_name) as storeName,
+        t4.product_json as productInfoJson,
+        t4.refund_num as num,
+        t4.attr_value as attrValue,
+        t4.id as cartId,
+        t4.price,
+        t1.create_time as createTime,
+        t1.status,
+        t1.phone,
+        t1.name,
+        t1.address,
+        t3.`status` as refundStatus
+        FROM
+        tb_order t1
+        inner join
+        tb_order_refund t3 on t1.order_id = t3.order_id
+        LEFT JOIN
+        tb_store t2 ON t1.store_id = t2.id
+        left join
+        tb_order_refund_product t4 on t3.id = t4.refund_order_id
+        where 1 = 1
+        <if test='params.type != null and params.type == "1"'>
+            and (t3.status = "1" or t3.status = "3")
+        </if>
+        <if test='params.type != null and params.type == "2"'>
+            and (t3.status = "2"  or t3.status = "4" or t3.status = "5")
+        </if>
+        <if test="params.userId != null and params.userId != ''">
+            and t1.user_id = #{params.userId}
+        </if>
+        order by t1.create_time desc
+    </select>
+
+    <select id="selectOrderMoney" resultType="java.math.BigDecimal">
+        select sum(pay_money) from tb_order where `status` = 5
+    </select>
+
+    <select id="selectTodayOrderMoney" resultType="java.math.BigDecimal">
+        select ifnull(sum(pay_money),0) from tb_order where `status` = 5 and date_format(create_time, '%Y-%m-%d') = date_format(now(), '%Y-%m-%d')
+    </select>
+
+    <select id="selectCustomerCharts" resultType="com.qimeixun.vo.DataChartVO">
+        SELECT
+            count(1) AS num,
+            DATE_FORMAT(create_time, '%Y-%m-%d') AS `time`
+        FROM
+            tb_user
+        WHERE
+            DATE_FORMAT(create_time, '%Y-%m') = DATE_FORMAT(now(), '%Y-%m')
+        GROUP BY
+            DATE_FORMAT(create_time, '%Y-%m-%d')
+    </select>
+
+    <select id="selectOrderMoneyCharts" resultType="com.qimeixun.vo.DataChartVO">
+        SELECT
+            ifnull(sum(pay_money),0) AS num,
+            DATE_FORMAT(create_time, '%Y-%m-%d') AS time
+        FROM
+            tb_order
+        WHERE `status` = 5 and
+            DATE_FORMAT(create_time, '%Y-%m') = DATE_FORMAT(now(), '%Y-%m')
+        GROUP BY
+            DATE_FORMAT(create_time, '%Y-%m-%d')
+    </select>
+
+    <select id="selectOrderCountCharts" resultType="com.qimeixun.vo.DataChartVO">
+        SELECT
+            count(id) AS num,
+            DATE_FORMAT(create_time, '%Y-%m-%d') AS time
+        FROM
+            tb_order
+        WHERE `status` = 5 and
+            DATE_FORMAT(create_time, '%Y-%m') = DATE_FORMAT(now(), '%Y-%m')
+        GROUP BY
+            DATE_FORMAT(create_time, '%Y-%m-%d')
+    </select>
+    <select id="selectOrderAttrValue" resultType="java.lang.String">
+        select attr_value from tb_shop_cart where id = #{cartId}
+    </select>
+    <select id="selectOrderProductCountList" resultType="com.qimeixun.vo.OrderProductListVO">
+        SELECT
+            t3.product_id,
+            t3.num,
+            t3.seckill_product_id
+        FROM
+            tb_order t1
+        INNER JOIN tb_order_cart t2 ON t1.order_id = t2.order_id
+        INNER JOIN tb_shop_cart t3 ON t2.cart_id = t3.id
+        WHERE
+            t1.order_id = #{orderId}
+    </select>
+    <select id="selectUserOrderById" resultMap="selectUserOrderList">
+        SELECT
+        t1.order_id as orderId,
+        t1.total_money as totalMoney,
+        t1.total_post as totalPost,
+        t1.store_coupon_money as storeCoponMoney,
+        t1.platform_coupon_money as platformCouponMoney,
+        t1.pay_money as payMoney,
+        t1.store_id as storeId,
+        if(t1.store_id = 0,'自营', t2.store_name) as storeName,
+        t4.product_info as productInfoJson,
+        t4.num,
+        t4.attr_value as attrValue,
+        t7.platform_coupon_id as platformCouponId,
+        t4.id as cartId,
+        t4.price,
+        t1.create_time as createTime,
+        t1.status,
+        t6.nick_name as nickName,
+        t1.remark,
+        t1.buy_type as buyType,
+        t1.phone,
+        t1.NAME,
+        t1.address,
+        t1.is_points,
+        t1.refund_status as refundStatus,
+        t1.order_type
+        FROM
+        tb_order t1
+        LEFT JOIN
+        tb_store t2 ON t1.store_id = t2.id
+        left join
+        tb_order_cart t3 on t1.order_id = t3.order_id
+        left join
+        tb_shop_cart t4 on t3.cart_id = t4.id
+        left join
+        tb_order_pay t7 on t1.order_id = t7.order_id
+        left join
+        tb_user t6 on t1.user_id = t6.id
+        where t1.order_id = #{orderId}  and t1.user_id = #{userId}
+    </select>
+    <select id="selectOrderExpress" resultType="com.qimeixun.vo.OrderExpressVO">
+        SELECT
+            t2.express_code,
+            t1.express_number,
+            t2.express_name
+        FROM
+            tb_order t1
+        INNER JOIN tb_express t2 ON t1.express_id = t2.id
+        where t1.order_id = #{orderId}
+    </select>
+    <select id="selectRefundOrderList" resultMap="selectUserRefundOrderMap">
+        SELECT
+        t1.order_id AS orderId,
+        t1.total_money AS totalMoney,
+        t1.total_post AS totalPost,
+        t1.store_coupon_money AS storeCoponMoney,
+        t1.platform_coupon_money AS platformCouponMoney,
+        t1.pay_money AS payMoney,
+        t1.store_id AS storeId,
+        IF (
+        t1.store_id = 0,
+        '自营',
+        t2.store_name
+        ) AS storeName,
+        t7.platform_coupon_id AS platformCouponId,
+        t1.create_time AS createTime,
+        t1. STATUS,
+        t6.nick_name AS nickName,
+        t1.remark,
+        t1.buy_type AS buyType,
+        t1.pay_type,
+        t8.remark as refundRemark,
+        t8.refund_money as refundMoney,
+        t8.type as refundType,
+        t8.create_time as refundCreateTime,
+        t8.system_remark as systemRemark,
+        t8.`status` as userRefundStatus,
+        t8.id as refundOrderId,
+        t7.pay_time,
+        t1.order_type
+        FROM
+        tb_order t1
+        INNER JOIN tb_order_refund t8 ON t1.order_id = t8.order_id
+        LEFT JOIN tb_store t2 ON t1.store_id = t2.id
+        LEFT JOIN tb_order_pay t7 on t1.order_id = t7.order_id
+        LEFT JOIN tb_user t6 ON t1.user_id = t6.id
+        where 1 = 1
+        <if test='params.type != null and params.type == "1"'>
+            and t8.status = 1
+        </if>
+        <if test='params.type != null and params.type == "2"'>
+            and t8.status = 2
+        </if>
+        <if test='params.type != null and params.type == "3"'>
+            and t8.status = 3
+        </if>
+        <if test='params.type != null and params.type == "4"'>
+            and t8.status = 4
+        </if>
+        <if test='params.type != null and params.type == "5"'>
+            and t8.status = 5
+        </if>
+        <if test="params.orderId != null and params.orderId != ''">
+            and t1.order_id = #{params.orderId}
+        </if>
+        <if test="params.nickName != null and params.nickName != ''">
+            and t6.nick_name = #{params.nickName}
+        </if>
+        <if test="params.name != null and params.name != ''">
+            and t1.name = #{params.name}
+        </if>
+        <if test="params.phone != null and params.phone != ''">
+            and t1.phone = #{params.phone}
+        </if>
+        <if test="params.startTime != null and params.startTime != ''">
+            and t1.create_time >= #{params.startTime}
+        </if>
+        <if test="params.endTime != null and params.endTime != ''">
+            and t1.create_time <![CDATA[ < ]]>#{params.endTime}
+        </if>
+    </select>
+
+    <select id="selectUserRefundOrderProduct" resultType="com.qimeixun.vo.UserRefundProductVO">
+        select
+            id as cartId,
+            attr_value,
+            pay_num as num,
+            refund_num,
+            refund_order_id,
+            price,
+            product_json as productInfoJson
+         from tb_order_refund_product where refund_order_id = #{refundOrderId}
+    </select>
+
+    <update id="updateExpress" parameterType="com.qimeixun.ro.ExpressOrderRO">
+        update tb_order set express_id = #{expressId}, express_number = #{expressNumber}, status = 2  where order_id = #{orderId}
+    </update>
+
+    <update id="confirmReceiptGoods" parameterType="java.lang.String">
+        update tb_order set status = 3 where order_id = #{orderId}
+    </update>
+    <update id="completeOrder">
+        update tb_order set status = 5 where order_id = #{orderId}
+    </update>
+
+</mapper>

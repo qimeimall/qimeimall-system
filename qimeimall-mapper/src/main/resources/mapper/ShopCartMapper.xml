@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qimeixun.mapper.ShopCartMapper">
+
+    <select id="selectUserCartList" parameterType="java.lang.String" resultType="com.qimeixun.vo.ShopCartListVO">
+              select * from (
+                SELECT
+                    t1.id,
+                    t2.product_name,
+                    t2.product_img,
+                    t1.num,
+                    t2.price,
+                    0 as type,
+                    t1.create_time,
+                    null as attr_value,
+                    t1.product_id
+                FROM
+                    tb_shop_cart t1
+                LEFT JOIN
+                    tb_product t2 on t1.product_id = t2.id
+                WHERE
+                    t1.product_attr_id = 0 and t1.user_id = #{userId} and t1.is_delete = 0 and t1.is_pay = '0'
+
+            union all
+
+                SELECT
+                    t1.id,
+                    t2.product_name,
+                    t2.product_img,
+                    t1.num,
+                    t3.price,
+                    if(t3.attr_value is null, 3, 0)  as type,
+                    t1.create_time,
+                    t3.attr_value,
+                    t1.product_id
+                FROM
+                    tb_shop_cart t1
+                LEFT JOIN
+                    tb_product t2 on t1.product_id = t2.id
+                left join
+                    tb_product_attr_detail t3 on t1.product_attr_id = t3.id
+                WHERE
+                    t1.product_attr_id != 0 and t1.user_id = #{userId} and t1.is_delete = 0 and t1.is_pay = '0'
+
+                ) tt order by type, create_time desc
+    </select>
+
+    <select id="selectGoodsCartCount" parameterType="java.lang.String" resultType="int">
+         select ifnull(sum(num),0) from (
+                SELECT
+                    t1.id,
+                    t2.product_name,
+                    t2.product_img,
+                    t1.num,
+                    t2.price,
+                    0 as type,
+                    t1.create_time,
+                    null as attr_value,
+                    t1.product_id
+                FROM
+                    tb_shop_cart t1
+                LEFT JOIN
+                    tb_product t2 on t1.product_id = t2.id
+                WHERE
+                    t1.product_attr_id = 0 and t1.user_id = #{userId} and t1.is_delete = 0 and t1.is_pay = '0'
+
+            union all
+
+                SELECT
+                    t1.id,
+                    t2.product_name,
+                    t2.product_img,
+                    t1.num,
+                    t3.price,
+                    if(t3.attr_value is null, 3, 0)  as type,
+                    t1.create_time,
+                    t3.attr_value,
+                    t1.product_id
+                FROM
+                    tb_shop_cart t1
+                LEFT JOIN
+                    tb_product t2 on t1.product_id = t2.id
+                left join
+                    tb_product_attr_detail t3 on t1.product_attr_id = t3.id
+                WHERE
+                    t1.product_attr_id != 0 and t1.user_id = #{userId} and t1.is_delete = 0 and t1.is_pay = '0'
+
+                ) tt order by type, create_time desc
+    </select>
+
+
+    <update id="updateCartPayStatus" parameterType="list">
+        <!--update tb_shop_cart set is_pay = 1 where id  in-->
+        <!--<foreach item="item" collection="list" open="(" separator="," close=")">-->
+            <!--#{item.id}-->
+        <!--</foreach>-->
+
+        update tb_shop_cart
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="product_info = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.id!=null">
+                        when id=#{item.id} then #{item.productInfo}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="attr_value = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.id!=null">
+                        when id=#{item.id} then #{item.attrValue}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="price = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.id!=null">
+                        when id=#{item.id} then #{item.price}
+                    </if>
+                </foreach>
+            </trim>
+            is_pay = 1
+        </trim>
+        where id in
+        <foreach collection="list"  item="item" index="index" open="(" separator="," close=")">
+            #{item.id}
+        </foreach>
+    </update>
+</mapper>

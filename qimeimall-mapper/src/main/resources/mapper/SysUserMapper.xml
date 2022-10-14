@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 管理员用户  wangdaqiang 2019-08-22 -->
+<mapper namespace="com.qimeixun.mapper.SysUserMapper">
+
+    <!-- 新增 -->
+    <insert id="insert" parameterType="com.qimeixun.entity.SysUser">
+        INSERT INTO sys_user (
+            id,
+            login_name,
+            password,
+            user_name,
+            mobile,
+            user_type,
+            is_super,
+            status,
+            is_online,
+            card_number,
+            store_id
+        ) VALUES (
+            #{id},
+            #{loginName},
+            #{password},
+            #{userName},
+            #{mobile},
+            #{userType},
+            #{isSuper},
+            #{status},
+            #{isOnline},
+            #{cardNumber},
+            #{storeId}
+        )
+    </insert>
+
+
+    <!-- 删除 -->
+    <update id="delete" parameterType="java.lang.String">
+        update sys_user set is_delete = 1 where id = #{id}
+    </update>
+
+
+    <!-- 更新 -->
+    <update id="update" parameterType="com.qimeixun.entity.SysUser">
+        update sys_user
+        set
+        <if test="password != null and password != ''">
+            password = #{password},
+        </if>
+        <if test="userName != null and userName != ''">
+            user_name = #{userName},
+        </if>
+        <if test="mobile != null and mobile != ''">
+            mobile = #{mobile},
+        </if>
+        <if test="userType != null">
+            user_type = #{userType},
+        </if>
+        <if test="lastLoginTime != null">
+            last_login_time = NOW(),
+        </if>
+        <if test="rememberToken != null and rememberToken != ''">
+            remember_token = #{rememberToken},
+        </if>
+        <if test="storeId != null">
+            store_id = #{storeId},
+        </if>
+        updated_at = NOW()
+        where id = #{id}
+    </update>
+
+
+    <!-- 根据id查询管理员用户信息 -->
+    <select id="selectById" parameterType="java.lang.String" resultType="com.qimeixun.entity.SysUser">
+        SELECT
+            u.id,
+            u.login_name,
+            u.user_name,
+            u.mobile,
+            u.user_type,
+            u.is_super,
+            u.remember_token,
+            u.created_at,
+            u.updated_at,
+            u.last_login_time,
+            u.status,
+            u.is_online,
+            u.card_number,
+            u.store_id
+        FROM sys_user AS u
+        where u.is_delete = 0 and u.id = #{id}
+    </select>
+
+
+    <!-- 查询管理员用户数据列表 -->
+    <select id="selectSysUserList" parameterType="com.qimeixun.ro.SysUserRO" resultType="com.qimeixun.vo.SysUserVO">
+        SELECT
+            u.id,
+            u.login_name,
+            u.user_name,
+            u.mobile,
+            u.user_type,
+            u.is_super,
+            u.remember_token,
+            u.created_at,
+            u.updated_at,
+            u.last_login_time,
+            u.status,
+            u.is_online,
+            u.card_number
+        FROM sys_user AS u
+        where u.is_delete = 0
+        <if test="id != null and id != ''">
+            and u.id = #{id}
+        </if>
+        <if test="loginName != null and loginName != ''">
+            and u.login_name like CONCAT('%', CONCAT(#{loginName}, '%'))
+        </if>
+        <if test="userName != null and userName != ''">
+            and u.user_name like CONCAT('%', CONCAT(#{userName}, '%'))
+        </if>
+        <if test="mobile != null and mobile != ''">
+            and u.mobile like CONCAT('%', CONCAT(#{mobile}, '%'))
+        </if>
+        <if test="userType != null">
+            and u.user_type = #{userType}
+        </if>
+        <if test="cardNumber != null and cardNumber != ''">
+            and u.card_number like CONCAT('%', CONCAT(#{cardNumber}, '%'))
+        </if>
+        order by u.updated_at desc
+        limit #{limitFrom}, #{pageSize}
+    </select>
+
+
+    <!-- 查询管理员用户数据总条数(分页) -->
+    <select id="selectSysUserListCount" parameterType="com.qimeixun.ro.SysUserRO" resultType="int">
+        SELECT count(u.id)
+        FROM sys_user AS u
+        where u.is_delete = 0
+        <if test="id != null and id != ''">
+            and u.id = #{id}
+        </if>
+        <if test="loginName != null and loginName != ''">
+            and u.login_name like CONCAT('%', CONCAT(#{loginName}, '%'))
+        </if>
+        <if test="userName != null and userName != ''">
+            and u.user_name like CONCAT('%', CONCAT(#{userName}, '%'))
+        </if>
+        <if test="mobile != null and mobile != ''">
+            and u.mobile like CONCAT('%', CONCAT(#{mobile}, '%'))
+        </if>
+        <if test="userType != null">
+            and u.user_type = #{userType}
+        </if>
+        <if test="cardNumber != null and cardNumber != ''">
+            and u.card_number like CONCAT('%', CONCAT(#{cardNumber}, '%'))
+        </if>
+    </select>
+
+
+    <!-- 根据登录名查询 -->
+    <select id="selectByLoginName" parameterType="java.lang.String" resultType="com.qimeixun.entity.SysUser">
+        SELECT
+            u.id,
+            u.login_name,
+            u.password,
+            u.user_name,
+            u.mobile,
+            u.user_type,
+            u.is_super,
+            u.remember_token,
+            u.created_at,
+            u.updated_at,
+            u.last_login_time,
+            u.status,
+            u.is_online,
+            u.card_number
+        FROM sys_user AS u
+        where u.is_delete = 0 and u.login_name = #{loginName}
+        <if test="id != null">
+            and id != #{id}
+        </if>
+        limit 1
+    </select>
+
+    <!-- 根据手机号查询 -->
+    <select id="selectByMobile" parameterType="java.lang.String" resultType="com.qimeixun.entity.SysUser">
+        SELECT
+            u.id,
+            u.login_name,
+            u.password,
+            u.user_name,
+            u.mobile,
+            u.user_type,
+            u.is_super,
+            u.remember_token,
+            u.created_at,
+            u.updated_at,
+            u.last_login_time,
+            u.status,
+            u.is_online,
+            u.card_number
+        FROM sys_user AS u
+        where u.is_delete = 0 and u.mobile = #{mobile}
+        <if test="id != null">
+            and id != #{id}
+        </if>
+        limit 1
+    </select>
+
+
+    <!-- 管理员登录 -->
+    <select id="selectByLogin" parameterType="com.qimeixun.ro.SysLoginRO" resultType="com.qimeixun.entity.SysUser">
+        SELECT
+            u.id,
+            u.login_name,
+            u.password,
+            u.user_name,
+            u.mobile,
+            u.user_type,
+            u.is_super,
+            u.remember_token,
+            u.created_at,
+            u.updated_at,
+            u.last_login_time,
+            u.status,
+            u.is_online,
+            u.card_number,
+            u.store_id
+        FROM sys_user AS u
+        where u.is_delete = 0 and (u.login_name = #{loginName} or u.mobile = #{loginName})
+        limit 1
+    </select>
+
+
+    <!-- 给管理员添加角色 -->
+    <insert id="addSysUserRole" parameterType="com.qimeixun.ro.SysUserRoleRO">
+        insert into sys_user_role (id,user_id, role_id)
+        values (UUID(),#{userId}, #{roleId})
+    </insert>
+
+
+    <!-- 给管理员删除角色 -->
+    <update id="deleteSysUserRole" parameterType="com.qimeixun.ro.SysUserRoleRO">
+        delete from sys_user_role where user_id = #{userId} and role_id = #{roleId}
+    </update>
+
+
+    <!-- 批量添加管理员用户角色 -->
+    <insert id="addSysUserRoles" parameterType="java.util.Map">
+        insert into sys_user_role (id, user_id, role_id)
+        values
+        <foreach collection="roleIds" item="roleId" separator=",">
+            (UUID(), #{userId}, #{roleId})
+        </foreach>
+    </insert>
+
+
+</mapper>

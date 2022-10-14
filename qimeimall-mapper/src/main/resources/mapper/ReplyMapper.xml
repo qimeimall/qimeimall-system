@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qimeixun.mapper.ReplyMapper">
+
+    <select id="selectReplyList" resultType="com.qimeixun.po.ReplyDTO">
+        SELECT
+            t1.*, t2.nick_name,
+            t2.head_img
+        FROM
+            tb_product_reply t1
+        INNER JOIN tb_user t2 ON t1.user_id = t2.id
+        WHERE
+            t1.is_del = 0
+            and t1.product_id = #{params.productId}
+        ORDER BY
+            create_time DESC
+    </select>
+    <select id="selectSysReplayList" resultType="com.qimeixun.vo.SysReplayVO">
+        SELECT
+            t1.*, t2.nick_name,
+            t3.product_name
+        FROM
+            tb_product_reply t1
+        LEFT JOIN tb_user t2 ON t1.user_id = t2.id
+        LEFT JOIN tb_product t3 ON t1.product_id = t3.id
+        where is_del = 0
+        <if test='params.type != null and params.type == "1"'>
+            and t1.merchant_reply_content is null
+        </if>
+        <if test='params.type != null and params.type == "2"'>
+            and t1.merchant_reply_content is not null
+        </if>
+        ORDER BY
+            create_time DESC
+    </select>
+</mapper>

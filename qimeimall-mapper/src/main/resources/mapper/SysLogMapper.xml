@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qimeixun.mapper.SysLogMapper">
+
+	<select id="selectAll" parameterType="com.qimeixun.ro.SysLogRO" resultType="com.qimeixun.vo.SysLogVO">
+		SELECT
+			t1.log_id AS logId,
+			t1.create_time AS createTime,
+			t1.type,
+			t1.title,
+			t1.remote_addr AS remoteAddr,
+			t1.exception,
+			ifnull(t2.user_name , ifnull(t3.nick_name, '游客')) userName,
+			t1.timeout,
+			t1.request_uri
+		FROM
+		sys_log t1
+		left join
+		sys_user t2 on t1.user_id = t2.id
+		left join
+		tb_user t3 on t1.user_id = t3.id
+		WHERE
+		1 = 1
+		<if test="timeBegin != null">
+			and t1.create_time &gt;= #{timeBegin}
+		</if>
+		<if test="timeEnd != null">
+			and t1.create_time &lt;= #{timeEnd}
+		</if>
+		<if test="type != null and type != ''">
+			and t1.type = #{type}
+		</if>
+		<if test="title != null and title != ''">
+			and t1.title like CONCAT('%', CONCAT(#{title}, '%'))
+		</if>
+		<if test="userName != null and userName != ''">
+			and t2.user_name like CONCAT('%', CONCAT(#{userName}, '%'))
+		</if>
+		order by t1.create_time desc
+		limit #{limitFrom}, #{pageSize}
+	</select>
+
+	<select id="selectAllCount" parameterType="com.qimeixun.ro.SysLogRO" resultType="int">
+		select
+		count(t1.log_id)
+		from
+		sys_log t1, sys_user t2
+		where
+		t1.user_id = t2.id
+		<if test="timeBegin != null">
+			and t1.create_time &gt;= #{timeBegin}
+		</if>
+		<if test="timeEnd != null">
+			and t1.create_time &lt;= #{timeEnd}
+		</if>
+		<if test="type != null and type != ''">
+			and t1.type = #{type}
+		</if>
+		<if test="title != null and title != ''">
+			and t1.title like CONCAT('%', CONCAT(#{title}, '%'))
+		</if>
+		<if test="userName != null and userName != ''">
+			and t2.user_name like CONCAT('%', CONCAT(#{userName}, '%'))
+		</if>
+	</select>
+
+	<!-- 单记录删除 -->
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+		delete from sys_log
+		where log_id = #{logId,jdbcType=VARCHAR}
+	</delete>
+	
+	
+	<!-- 批量删除 -->
+	<delete id="deleteBatch" parameterType="int">
+        delete from sys_log where log_id in
+        <foreach item="item" collection="array" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+	
+</mapper>
