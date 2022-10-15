@@ -10,8 +10,8 @@ qimeimall基于当前流行技术组合的前后端分离商城系统： SpringB
 #### 在线预览地址
 
 1.  后台：http://admin.qimeixun.com 账号：admin 密码：123456
-2.  微信小程序搜索：启美MALL
-<img src="http://rjsa4soqe.hn-bkt.clouddn.com/gh_fde9de7765e9_258.jpg"/>
+2.  微信小程序搜索：启美MALL、
+![小程序]http://rjsa4soqe.hn-bkt.clouddn.com/gh_fde9de7765e9_258.jpg
 
 #### 使用说明
 
